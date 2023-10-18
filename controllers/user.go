@@ -8,10 +8,9 @@ import (
 	"github.com/munyoro/kanabanana-api/utils/token"
 )
 
-func (controller *GlobalController) CurrentUser(ctx *gin.Context) {
-	user, err := controller.getCurrentUser(ctx)
-	if err != nil {
-		println(err.Error())
+func (controller *GlobalController) CurrentUserHandler(ctx *gin.Context) {
+	user := controller.CurrentUser
+	if user == nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "An error ocurred while fetching user.",
 		})
@@ -23,7 +22,7 @@ func (controller *GlobalController) CurrentUser(ctx *gin.Context) {
 	})
 }
 
-func (controller *GlobalController) getCurrentUser(ctx *gin.Context) (models.User, error) {
+func (controller *GlobalController) GetCurrentUser(ctx *gin.Context) (models.User, error) {
 	currentUserId, err := token.ExtractTokenID(ctx)
 	if err != nil {
 		return models.User{}, err

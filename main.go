@@ -34,18 +34,18 @@ func main() {
 			auth.POST("/register", ctrl.Register)
 			auth.POST("/login", ctrl.Login)
 
-			me := auth.Group("/me").Use(middleware.JwtAuthMiddleware())
+			me := auth.Group("/me").Use(middleware.JwtAuthMiddleware(&ctrl))
 			{
-				me.GET("/", ctrl.CurrentUser)
+				me.GET("/", ctrl.CurrentUserHandler)
 			}
 		}
 
-		board := v1.Group("/board").Use(middleware.JwtAuthMiddleware())
+		board := v1.Group("/board").Use(middleware.JwtAuthMiddleware(&ctrl))
 		{
 			board.POST("/", ctrl.CreateBoard)
-			board.GET("/:id", ctrl.GetBoard)
-			board.PUT("/:id", ctrl.UpdateBoard)
-			board.DELETE("/:id", ctrl.DeleteBoard)
+			board.GET("/:boardId", ctrl.GetBoard)
+			board.PUT("/:boardId", ctrl.UpdateBoard)
+			board.DELETE("/:boardId", ctrl.DeleteBoard)
 		}
 	}
 
