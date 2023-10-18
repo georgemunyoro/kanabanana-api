@@ -34,38 +34,37 @@ func main() {
 			auth.POST("/register", ctrl.Register)
 			auth.POST("/login", ctrl.Login)
 
-			me := auth.Group("/me").Use(middleware.JwtAuthMiddleware(&ctrl))
+			me := auth.Group("/me", middleware.JwtAuthMiddleware(&ctrl))
 			{
 				me.GET("/", ctrl.CurrentUserHandler)
 			}
 		}
 
-		board := v1.Group("/board").Use(middleware.JwtAuthMiddleware(&ctrl))
+		board := v1.Group("/board", middleware.JwtAuthMiddleware(&ctrl))
 		{
 			board.POST("/", ctrl.CreateBoard)
 			board.GET("/:boardId", ctrl.GetBoard)
 			board.PUT("/:boardId", ctrl.UpdateBoard)
 			board.DELETE("/:boardId", ctrl.DeleteBoard)
+
+			list := board.Group("/:boardId/list")
+			{
+				list.POST("/", ctrl.CreateList)
+				list.GET("/:listId", ctrl.GetList)
+				list.PUT("/:listId", ctrl.UpdateList)
+				list.DELETE("/:listId", ctrl.DeleteList)
+
+				card := list.Group("/:listId/card")
+				{
+					card.POST("/", ctrl.CreateCard)
+					card.GET("/:cardId", ctrl.GetCard)
+					card.PUT("/:cardId", ctrl.UpdateCard)
+					card.DELETE("/:cardId", ctrl.DeleteCard)
+				}
+			}
+
 		}
 	}
-
-	// product := v1.Group("/product")
-	// {
-	// 	product.GET("/", ctrl.GetProducts)
-	// 	product.GET("/:id", ctrl.GetProduct)
-	// }
-
-	// user := v1.Group("/user")
-	// user.Use(middleware.JwtAuthMiddleware())
-	// {
-	// 	// user.GET("/", ctrl.CurrentUser)
-
-	// 	// cart := user.Group("/cart")
-	// 	// {
-	// 	// 	cart.GET("/", ctrl.GetCart)
-	// 	// 	cart.POST("/:product_id", ctrl.UpsertCart)
-	// 	// }
-	// }
 
 	r.Run(":8080")
 }

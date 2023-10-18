@@ -30,8 +30,11 @@ func (card *Card) AsJSON() gin.H {
 
 	return gin.H{
 		"id":          card.ID,
+		"name":        card.Name,
+		"description": card.Description,
 		"attachments": attachments,
 		"labels":      labels,
+		"dueDate":     card.DueDate,
 		"createdAt":   card.CreatedAt,
 		"updatedAt":   card.UpdatedAt,
 	}

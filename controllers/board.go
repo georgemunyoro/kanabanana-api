@@ -31,7 +31,9 @@ func (controller *GlobalController) CreateBoard(ctx *gin.Context) {
 
 	newBoard, err := board.CreateBoard(controller.Database)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create new board."})
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to create new board.",
+		})
 		return
 	}
 
@@ -45,7 +47,12 @@ func (controller *GlobalController) GetBoard(ctx *gin.Context) {
 	boardId := ctx.Params.ByName("boardId")
 
 	var board models.Board
-	result := controller.Database.Where("id = ?", boardId).Where("user_id = ?", controller.CurrentUser.ID).First(&board)
+	result := controller.Database.
+		Preload("Lists").
+		Preload("Lists.Cards").
+		Where("id = ?", boardId).
+		Where("user_id = ?", controller.CurrentUser.ID).
+		First(&board)
 
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -66,10 +73,13 @@ func (controller *GlobalController) UpdateBoard(ctx *gin.Context) {
 		return
 	}
 
-	boardId := ctx.Params.ByName("boardId")
-
 	var board models.Board
-	result := controller.Database.Preload("Lists").Where("id = ?", boardId).Where("user_id = ?", controller.CurrentUser.ID).First(&board)
+	result := controller.Database.
+		Preload("Lists").
+		Preload("Lists.Cards").
+		Where("id = ?", ctx.Params.ByName("boardId")).
+		Where("user_id = ?", controller.CurrentUser.ID).
+		First(&board)
 
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -82,22 +92,26 @@ func (controller *GlobalController) UpdateBoard(ctx *gin.Context) {
 		board.Name = input.Name
 	}
 
-	if input.ListIdsInOrder != "" && input.ListIdsInOrder != board.ListIdsInOrder && len(strings.Split(input.ListIdsInOrder, ",")) == len(board.Lists) {
+	if input.ListIdsInOrder != "" &&
+		input.ListIdsInOrder != board.ListIdsInOrder &&
+		len(strings.Split(input.ListIdsInOrder, ",")) == len(board.Lists) {
 		board.ListIdsInOrder = input.ListIdsInOrder
 	}
 
 	controller.Database.Save(board)
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": board.AsJSON(true),
-	})
+	ctx.JSON(http.StatusOK, gin.H{"data": board.AsJSON(true)})
 }
 
 func (controller *GlobalController) DeleteBoard(ctx *gin.Context) {
 	boardId := ctx.Params.ByName("boardId")
 
 	var board models.Board
-	result := controller.Database.Preload("Lists").Where("id = ?", boardId).Where("user_id = ?", controller.CurrentUser.ID).First(&board)
+	result := controller.Database.
+		Preload("Lists").
+		Preload("Lists.Cards").
+		Where("id = ?", boardId).
+		Where("user_id = ?", controller.CurrentUser.ID).
+		First(&board)
 
 	if result.Error != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -106,10 +120,14 @@ func (controller *GlobalController) DeleteBoard(ctx *gin.Context) {
 		return
 	}
 
-	controller.Database.Delete(&board)
+	if controller.Database.Delete(&board).Error != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "An unexpected error ocurred.",
+		})
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Board deleted successfully.",
 	})
-
 }
