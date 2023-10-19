@@ -21,7 +21,7 @@ func main() {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:8080", "http://localhost:3000"},
-		AllowMethods:     []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodHead, http.MethodDelete, http.MethodOptions},
+		AllowMethods:     []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodHead, http.MethodDelete, http.MethodOptions, http.MethodPut},
 		AllowHeaders:     []string{"Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -36,27 +36,27 @@ func main() {
 
 			me := auth.Group("/me", middleware.JwtAuthMiddleware(&ctrl))
 			{
-				me.GET("/", ctrl.CurrentUserHandler)
+				me.GET("", ctrl.CurrentUserHandler)
 			}
 		}
 
 		board := v1.Group("/board", middleware.JwtAuthMiddleware(&ctrl))
 		{
-			board.POST("/", ctrl.CreateBoard)
+			board.POST("", ctrl.CreateBoard)
 			board.GET("/:boardId", ctrl.GetBoard)
 			board.PUT("/:boardId", ctrl.UpdateBoard)
 			board.DELETE("/:boardId", ctrl.DeleteBoard)
 
 			list := board.Group("/:boardId/list")
 			{
-				list.POST("/", ctrl.CreateList)
+				list.POST("", ctrl.CreateList)
 				list.GET("/:listId", ctrl.GetList)
 				list.PUT("/:listId", ctrl.UpdateList)
 				list.DELETE("/:listId", ctrl.DeleteList)
 
 				card := list.Group("/:listId/card")
 				{
-					card.POST("/", ctrl.CreateCard)
+					card.POST("", ctrl.CreateCard)
 					card.GET("/:cardId", ctrl.GetCard)
 					card.PUT("/:cardId", ctrl.UpdateCard)
 					card.DELETE("/:cardId", ctrl.DeleteCard)

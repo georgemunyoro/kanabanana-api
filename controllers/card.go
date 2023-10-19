@@ -9,12 +9,13 @@ import (
 
 type CreateCardInput struct {
 	Name        string `json:"name" binding:"required"`
-	Description string `json:"description" binding:"required"`
+	Description string `json:"description"`
 }
 
 type UpdateCardInput struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	ListID      uint   `json:"listId"`
 }
 
 func (controller *GlobalController) CreateCard(ctx *gin.Context) {
@@ -118,6 +119,8 @@ func (controller *GlobalController) UpdateCard(ctx *gin.Context) {
 	if input.Description != card.Description {
 		card.Description = input.Description
 	}
+
+	card.ListID = input.ListID
 
 	controller.Database.Save(card)
 	ctx.JSON(http.StatusOK, gin.H{"data": card.AsJSON()})
