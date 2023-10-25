@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -15,12 +16,13 @@ func main() {
 	if err != nil {
 		panic("Failed to connect to database!")
 	}
-	ctrl := controllers.GlobalController{Database: db}
 
+	ctrl := controllers.GlobalController{Database: db}
+	port := os.Getenv("PORT")
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8080", "http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:" + port, "http://localhost:3000"},
 		AllowMethods:     []string{http.MethodGet, http.MethodPatch, http.MethodPost, http.MethodHead, http.MethodDelete, http.MethodOptions, http.MethodPut},
 		AllowHeaders:     []string{"Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -66,5 +68,5 @@ func main() {
 		}
 	}
 
-	r.Run(":8080")
+	r.Run(":" + port)
 }
